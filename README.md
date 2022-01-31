@@ -1,14 +1,7 @@
 # Wicket HTML DSL
 
-[Apache Wicket][2] is a component based web framework for the
-JVM. Pages and components are typically implemented by separating
-markup (HTML) and the actual behavior (Kotlin/Java/Scala) into two
-files. To connect them back together, HTML elements are given a
-`wicket:id` attribute with a unique id, which is referenced in the
-corresponding class.
-
 This project was an attempt at implementing a DSL in the spirit of
-[kotlinx.html][1] for Wicket, which, while allowing to embed (and thus
+[kotlinx.html][1] for [Apache Wicket][2], which, while allowing to embed (and thus
 reuse) existing components, would eliminate the need for separating
 markup and behavior, thus eliminating the need for managing
 `wicket:id`s. Take a look at the following [example](#Example) to get
