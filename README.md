@@ -1,11 +1,11 @@
 # Wicket HTML DSL
 
 This project was an attempt at implementing a DSL in the spirit of
-[kotlinx.html][1] for [Apache Wicket][2], which, while allowing to embed (and thus
-reuse) existing components, would eliminate the need for separating
-markup and behavior, thus eliminating the need for managing
-`wicket:id`s. Take a look at the following [example](#Example) to get
-an idea of how that might have looked.
+[kotlinx.html][1] for [Apache Wicket][2]. Its goal was to allow
+embedding (and thus reusing) existing components, while eliminating
+the need for separate markup files and therefore eliminating the need
+for managing `wicket:id`s. Take a look at the following
+[example](#Example) to get an idea of how that might have looked.
 
 However, due to the nature of Wicket, working with repeaters, such as
 `ListView`, becomes [problematic](#Problem). While it is possible to
@@ -153,7 +153,8 @@ class MyPage: HtmlWebPage() {
 ```
 
 This means, the separation of markup files and components/behavior, is
-so ingrained in Wicket, that it is impossible to bridge it.
+so ingrained in Wicket, that it is impossible to nicely bridge it,
+except for probably compiling to it.
 
 
 
