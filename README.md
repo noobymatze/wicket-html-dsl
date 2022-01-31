@@ -2,21 +2,25 @@
 
 [Apache Wicket][2] is a component based web framework for the
 JVM. Pages and components are typically implemented by separating
-markup (HTML) and the actual behavior (Kotlin/Java/Scala) into
-separate files. To connect them back together, HTML elements are given
-a `wicket:id` attribute with an id, which is referenced in the
+markup (HTML) and the actual behavior (Kotlin/Java/Scala) into two
+files. To connect them back together, HTML elements are given a
+`wicket:id` attribute with a unique id, which is referenced in the
 corresponding class.
 
 This project was an attempt at implementing a DSL in the spirit of
-[kotlinx.html][1] for Wicket, while still being able to embed (and
-thus reuse) existing components. Take a look at the following
-[example](#Example) to get an idea of how that might have looked. 
+[kotlinx.html][1] for Wicket, which, while allowing to embed (and thus
+reuse) existing components, would eliminate the need for separating
+markup and behavior, thus eliminating the need for managing
+`wicket:id`s. Take a look at the following [example](#Example) to get
+an idea of how that might have looked.
 
-You can also jump directly to the [problems](#Problems), which are the
-reason, why I won't further follow up on this.
-
-If you have an idea on how to make this work, feel free to fork it or
-create an issue. 
+However, due to the nature of Wicket, working with repeaters, such as
+`ListView`, becomes [problematic](#Problem). While it is possible to
+embed them, it is necessary to manage `wicket:id`s again. This breaks
+the abstraction and may result in confusion about when to manage
+`wicket:id`s and when not to. Therefore, I will not work on this any
+further. If you have an idea on how to make this work nicely, feel
+free to fork it or create an issue.
 
 
 ## Example
@@ -97,25 +101,39 @@ class MyPage: WebPage() {
 
 ## Problem
 
-There is a problem which breaks this DSL a bit, when working with
-repeaters, such as `ListView`. To understand that problem, we need to
-take a look at how the DSL is implemented and the order in which it
-will be executed.
+While the above example works fine for most cases, a problem arises,
+when we take a stab at working with repeaters such as `ListView`. The
+reason for this is simple: Since markup and behavior are separate, the
+full markup of a page or component must be known, before child
+components are actually added and then populated with data. This means
+the markup in a `ListView` cannot vary between items and has to be
+more or less static.
 
-Wicket renders a page in multiple phases. For our purposes only two
-are relevant.
+Therefore it would be impossible to implement the ergonomic and
+natural way to work with a `ListView`, shown in the following example.
 
-1. Retrieve the markup of the page to be rendered. The default way is
-   to have a separate markup file with the same name (as seen in the
-   example). However, a page or component can implement the interface
-   `IMarkupResourceStreamProvider` to decide by itself, where the
-   markup comes from. This is how the `HtmlWebPage` from the example
-   does it.
-2. Wicket will call some methods in a specific order to render the
-   page and connect components with specific markup elements.
+```kotlin
+class MyPage: HtmlWebPage() {
 
-Knowing this process, adding a `ListView` would work in the following
-way.
+    private val data = ListModel(listOf("World", "Earth"))
+
+    fun HtmlBuilder.render() = html {
+        head {
+            title { +"Hello World!" }
+        }
+        
+        body {
+            listView("div", data) { item ->
+                component("span", Label(newId(), item))
+            }
+        }
+    }
+    
+}
+```
+
+Instead, it would be necessary to drop down to managing `wicket:id`s
+by ourselves again. This breaks the abstraction and is confusing.
 
 ```kotlin
 class MyPage: HtmlWebPage() {
@@ -141,30 +159,8 @@ class MyPage: HtmlWebPage() {
 }
 ```
 
-The problem with this, is that users need to manage markup ids by
-themselves once again. That is, because by the time, the markup is
-requested by Wicket, the ListView has not yet been rendered. So it is
-impossible to implement the following function:
-
-```kotlin
-class MyPage: HtmlWebPage() {
-
-    private val data = ListModel(listOf("World", "Earth"))
-
-    fun HtmlBuilder.render() = html {
-        head {
-            title { +"Hello World!" }
-        }
-        
-        body {
-            listView("div", data) { item ->
-                component("span", Label(newId(), item))
-            }
-        }
-    }
-    
-}
-```
+This means, the separation of markup files and components/behavior, is
+so ingrained in Wicket, that it is impossible to bridge it.
 
 
 
